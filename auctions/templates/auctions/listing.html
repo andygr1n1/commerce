@@ -1,0 +1,44 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% if message %}
+<div class="alert alert-danger" role="alert">
+    {{ message }}
+</div>
+{% endif %}
+<h2>{{ listing.title }}</h2>
+<p>{{ listing.description }}</p>
+{% if listing.image_url %}
+<img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="200">
+{% if user.is_authenticated %}
+<form action="{% url 'listing' listing.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="{% if is_watchlist %}remove{% else %}add{% endif %}">
+    {% if is_watchlist %}
+    <input type="submit" value="Remove from Watchlist" class="btn btn-danger">
+    {% else %}
+    <input type="submit" value="Add to Watchlist" class="btn btn-primary">
+    {% endif %}
+</form>
+{% endif %}
+
+<p>Starting Bid: {{ listing.starting_bid }}</p>
+<p>Current Bid: {{ listing.current_bid }}</p>
+{% if user.is_authenticated %}
+<form action="{% url 'listing' listing.id %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <input class="form-control" type="number" name="bid_amount" step="0.01"
+            min="{{ listing.current_bid|default_if_none:listing.starting_bid|add:1 }}"
+            value="{{ listing.current_bid|default_if_none:listing.starting_bid|add:1 }}" placeholder="Enter your bid">
+    </div>
+    <input class="btn btn-primary" type="submit" value="Place Bid">
+</form>
+{% endif %}
+<p>Category: {{ listing.category.name }}</p>
+<p>Owner: {{ listing.owner.username }}</p>
+<p>Created At: {{ listing.created_at }}</p>
+<p>Updated At: {{ listing.updated_at }}</p>
+<a href="{% url 'index' %}">Go back</a>
+{% endif %}
+{% endblock %}
