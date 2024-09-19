@@ -4,11 +4,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import AuctionListing, Bid, Category, User, Watchlist
+from .models import AuctionListing, Bid, Category, User, Watchlist, Comment
 
 
 def index(request):
-    listings = AuctionListing.objects.all()
+    # active listings
+    listings = AuctionListing.objects.filter(is_active=True)
     return render(request, "auctions/index.html", {
         "listings": listings
     })
@@ -65,6 +66,12 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+def closed_listings(request):
+    listings = AuctionListing.objects.filter(is_active=False)
+    return render(request, "auctions/closed_listings.html", {
+        "listings": listings,
+    })
+
 def add_listing(request):
     # print(request.user)
     if request.method == "POST":
@@ -74,8 +81,11 @@ def add_listing(request):
         image_url = request.POST["image_url"]
         category = Category.objects.get(id=request.POST["category"]) if request.POST["category"] else None
         owner = User.objects.get(id=request.user.id)
-        listing = AuctionListing(title=title, description=description, starting_bid=starting_bid, image_url=image_url, category=category, owner=owner)
+        listing = AuctionListing(title=title, description=description, image_url=image_url, category=category, owner=owner)
         listing.save()
+        new_bid = Bid(owner=request.user, amount=starting_bid, listing=listing)
+        new_bid.save()
+        listing.bids.add(new_bid)
         return HttpResponseRedirect(reverse("index"))
     else:
         categories = Category.objects.all()
@@ -88,29 +98,40 @@ def listing(request, listing_id):
     if request.method == "POST":
         action = request.POST.get("action")
         bid = request.POST.get("bid_amount")
-        print('bid',bid)
+        comment = request.POST.get("comment")
+        close_auction = request.POST.get("close-auction")
+
         listing = AuctionListing.objects.get(id=listing_id)
+
         if action == "add":
             Watchlist.objects.create(user=request.user, listing=listing)
         if action == "remove":
             Watchlist.objects.filter(user=request.user, listing=listing).delete()
         if bid:
-            if float(bid) < float(listing.current_bid or 0) or float(bid) < float(listing.starting_bid or 0):
+            first_bid = listing.bids.first().amount if listing.bids.first() else 0
+            last_bid_amount = listing.bids.last().amount if listing.bids.last() else 0
+            if float(bid) < float(last_bid_amount) or float(bid) < float(first_bid):
                 return render(request, "auctions/listing.html", {
                         "listing": listing,
                         "is_watchlist": Watchlist.objects.filter(user=request.user, listing=listing).exists(),
                         "message": "Bid amount must be higher than the current bid and starting bid."
                     })
-            bid = Bid(bidder=request.user, listing=listing, amount=bid)
-            bid.save()
-            # listing.current_bid = bid.amount
-            # listing.save()
+            new_bid = Bid(owner=request.user, amount=bid, listing=listing)
+            new_bid.save()
+            listing.bids.add(new_bid)
+        if comment:
+            Comment.objects.create(user=request.user, listing=listing, content=comment)
+        if close_auction:
+            listing.is_active = False
+            listing.save()
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
     else:
         listing = AuctionListing.objects.get(id=listing_id)
-        is_watchlist = Watchlist.objects.filter(user=request.user, listing=listing).exists()
+        is_watchlist = Watchlist.objects.filter(user=request.user, listing=listing).exists() if request.user.is_authenticated else False
         return render(request, "auctions/listing.html", {
         "listing": listing,
-        "is_watchlist": is_watchlist
+        "is_watchlist": is_watchlist,
+        "bids": Bid.objects.filter(listing=listing),
+        "comments": Comment.objects.filter(listing=listing).order_by('-created_at')
     })
 

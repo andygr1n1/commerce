@@ -5,7 +5,7 @@ from .models import *
 # Register your models here.
 
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description', 'starting_bid', 'current_bid', 'image_url', 'created_at', 'updated_at', 'owner', 'is_active')
+    list_display = ('id', 'title', 'description', 'image_url', 'created_at', 'updated_at', 'owner', 'is_active')
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
@@ -24,14 +24,13 @@ class UserAdmin(admin.ModelAdmin):
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'watchlist_count')
 
-class BidAdmin(admin.ModelAdmin):
-    list_display = ('listing', 'bidder', 'amount', 'created_at')
+
 
 
 admin.site.register(User,UserAdmin)
 
 admin.site.register(AuctionListing, ListingAdmin)
-admin.site.register(Bid,BidAdmin)
+admin.site.register(Bid)
 admin.site.register(Comment)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Watchlist)
