@@ -1,0 +1,21 @@
+<h4 class="protest-guerrilla-regular mx-auto my-4 text-center text-secondary">Comments</h4>
+<!-- add comment -->
+{% if user.is_authenticated %}
+<form action="{% url 'listing' listing.id %}" method="post">
+    {% csrf_token %}
+    <textarea class="form-control" name="comment" placeholder="Enter your comment"></textarea>
+    <input class="btn btn-primary" type="submit" value="Add Comment">
+</form>
+{% endif %}
+<!-- comments -->
+<div class="my-4">
+    {% for comment in comments %}
+    <div class="d-flex flex-column justify-content-start align-items-start border-bottom border-secondary pb-1 mb-2">
+        <div class="d-flex flex-column">
+            <div class="text-sm text-primary fw-bold">{{ comment.user.username }}</div>
+            <div class="text-xs">{{ comment.created_at|date:"d M, H:i" }}</div>
+        </div>
+        <div class="text-md">{{ comment.content }}</div>
+    </div>
+    {% endfor %}
+</div>

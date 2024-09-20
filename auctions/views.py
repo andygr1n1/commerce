@@ -72,6 +72,29 @@ def closed_listings(request):
         "listings": listings,
     })
 
+
+def watchlist(request):
+    watchlist = Watchlist.objects.filter(user=request.user)
+    listings = AuctionListing.objects.filter(id__in=[watchlist_item.listing.id for watchlist_item in watchlist])
+    print('!!!',listings)
+    return render(request, "auctions/watchlist.html", {
+        "listings": listings
+    })
+
+def categories(request):
+    categories = Category.objects.all()
+    return render(request, "auctions/categories.html", {
+        "categories": categories
+    })
+
+def category(request, category_id):
+    category = Category.objects.get(id=category_id)
+    listings = AuctionListing.objects.filter(category=category, is_active=True)
+    return render(request, "auctions/category.html", {
+        "category": category,
+        "listings": listings
+    })
+
 def add_listing(request):
     # print(request.user)
     if request.method == "POST":
@@ -86,7 +109,7 @@ def add_listing(request):
         new_bid = Bid(owner=request.user, amount=starting_bid, listing=listing)
         new_bid.save()
         listing.bids.add(new_bid)
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse("index")))
     else:
         categories = Category.objects.all()
         return render(request, "auctions/add_listing.html", {
@@ -134,4 +157,3 @@ def listing(request, listing_id):
         "bids": Bid.objects.filter(listing=listing),
         "comments": Comment.objects.filter(listing=listing).order_by('-created_at')
     })
-

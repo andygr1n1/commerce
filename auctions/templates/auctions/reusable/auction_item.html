@@ -1,0 +1,30 @@
+<li class="listing-item p-3 rounded-lg my-4 d-flex flex-column">
+    <div class="d-flex">
+        {% if listing.image_url %}
+        <div><img src="{{ listing.image_url }}" alt="{{ listing.title }}" class="listing-item-image" /></div>
+        {% endif %}
+        <div class="px-2">
+            <h5 class="px-1">{{ listing.title }}</h5>
+            <p>
+            <p class="d-inline fw-bold px-1">Current Bid:</p>
+            <span class=" text-primary">
+                {% if listing.bids.last.amount %}
+                {{ listing.bids.last.amount }}
+                {% else %}
+                {{ listing.bids.first.amount|default_if_none:"0" }}
+                {% endif %}</span>
+            </p>
+        </div>
+    </div>
+    <div>
+        <p>
+            <span class="d-inline h6 px-1">Description:</span>{{ listing.description }}
+        </p>
+        {% if not listing.is_active %}
+        <p class="text-primary fw-bold"><span>This listing is closed</>
+                {% if user.is_authenticated and user == listing.bids.last.owner or user == listing.owner %}
+                <span>and winner is {{ listing.bids.last.owner.username }}</p>
+        {% endif %}</p>
+        {% endif %}
+    </div>
+</li>

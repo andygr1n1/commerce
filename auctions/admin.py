@@ -5,7 +5,10 @@ from .models import *
 # Register your models here.
 
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description', 'image_url', 'created_at', 'updated_at', 'owner', 'is_active')
+    list_display = ('id', 'title', 'description', 'owner', 'is_active', 'image_url', 'created_at', 'updated_at', )
+    list_editable = ('title','description', 'is_active', 'image_url') 
+    list_filter = ('owner', 'created_at', 'is_active')  
+    search_fields = ('title', 'description') 
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
@@ -24,13 +27,25 @@ class UserAdmin(admin.ModelAdmin):
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'watchlist_count')
 
+class BidAdmin(admin.ModelAdmin):
+    list_display = ('owner', 'amount', 'listing', 'created_at')
+    list_editable = ('amount',)
+    list_filter = ('owner', 'created_at')
+    search_fields = ('owner__username', 'listing__title')
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'content', 'listing', 'created_at')
+    list_editable = ('content',)
+    list_filter = ('user', 'created_at')
+    search_fields = ('user__username', 'listing__title')
+
 
 
 
 admin.site.register(User,UserAdmin)
 
 admin.site.register(AuctionListing, ListingAdmin)
-admin.site.register(Bid)
-admin.site.register(Comment)
+admin.site.register(Bid, BidAdmin)
+admin.site.register(Comment, CommentAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Watchlist)

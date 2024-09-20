@@ -1,0 +1,16 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+{% include 'auctions/reusable/module_title.html' with title='Categories' %}
+{% endblock %}
+
+{% block body %}
+<ul class="list-group">
+    {% for category in categories %}
+    <li class="list-group-item p-0">
+        <a href="{% url 'category' category.id %}" class="category-item list-group-item-action p-2 pointer-event">
+            {{category.name }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

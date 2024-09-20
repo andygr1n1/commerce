@@ -1,76 +1,102 @@
 {% extends "auctions/layout.html" %}
 
+<!-- title -->
+{% block title %}
+{% include 'auctions/reusable/module_title.html' with title=listing.title %}
+{% endblock %}
+<!-- user menu -->
+{% block user_menu %}
+{% if user.is_authenticated %}
+<li class="{% if listing.is_active %}text-primary{% else %}text-danger{% endif %} me-auto fw-bold">
+    Status: {{listing.is_active|yesno:"opened,closed" }}</li>
+<li class="ps-2">
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{% if is_watchlist %}remove{% else %}add{% endif %}">
+        {% if is_watchlist %}
+        <button type="submit" class="btn btn-warning text-white">
+            <div class="d-flex align-items-center"><i class="bi bi-star-fill"></i></div>
+        </button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-light text-black"><i class="bi bi-star-fill"></i></button>
+        {% endif %}
+    </form>
+</li>
+{% endif %}
+{% if user.is_authenticated and user == listing.owner and listing.is_active == True %}
+<li class="ps-2">
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="close-auction" value="close-auction">
+        <button type="submit" class="btn btn-danger">Close Auction</button>
+    </form>
+</li>
+{% endif %}
+{% endblock %}
+<!-- body -->
 {% block body %}
+
+<!-- alert message -->
 {% if message %}
 <div class="alert alert-danger" role="alert">
     {{ message }}
 </div>
 {% endif %}
-<!-- closing auction -->
-{% if user.is_authenticated and user == listing.owner and listing.is_active == True %}
-<form action="{% url 'listing' listing.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="close-auction" value="close-auction">
-    <button type="submit" class="btn btn-danger">Close Auction</button>
-</form>
+
+
+{% if not listing.is_active and user.is_authenticated %}
+{% if user == listing.bids.last.owner or user == listing.owner %}
+<h6 class="text-primary">Winner is {{ listing.bids.last.owner.username }} with price
+    {{listing.bids.last.amount }}</h6>
 {% endif %}
-{% if listing.is_active == True %}
-<h2 class="text-success">Auction Active</h2>
-{% elif user.is_authenticated and user == listing.bids.last.owner or user == listing.owner %}
-<h2 class="text-danger">Auction Closed: winner is {{ listing.bids.last.owner.username }} 
-    with price {{ listing.bids.last.amount }}</h2>
-{% else %}
-<h2 class="text-danger">Auction Closed</h2>
 {% endif %}
-<h2>{{ listing.title }}</h2>
-<p>{{ listing.description }}</p>
-{% if listing.image_url %}
-<img src="{{ listing.image_url }}" alt="{{ listing.title }}" width="200">
-{% if user.is_authenticated %}
-<form action="{% url 'listing' listing.id %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="{% if is_watchlist %}remove{% else %}add{% endif %}">
-    {% if is_watchlist %}
-    <input type="submit" value="Remove from Watchlist" class="btn btn-danger">
-    {% else %}
-    <input type="submit" value="Add to Watchlist" class="btn btn-primary">
+
+<div class="d-flex">
+    {% if listing.image_url %}
+    <img src="{{ listing.image_url }}" alt="{{ listing.title }}" class="listing-item-image">
     {% endif %}
-</form>
-{% endif %}
 
-<p>Starting Bid: {{ listing.bids.first.amount|default_if_none:"0" }}</p>
-<p>Current Bid: {{ listing.bids.last.amount|default_if_none:"0" }}</p>
-{% if user.is_authenticated and listing.is_active == True %}
-<form action="{% url 'listing' listing.id %}" method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        <input class="form-control" type="number" name="bid_amount" step="0.01"
-            min="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
-            value="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
-            placeholder="Enter your bid">
+    <!-- bid form -->
+    <div class="ps-2">
+        <div class="d-flex place-items-center">
+            <p class="d-inline fw-bold pe-1 py-0 my-0">Starting Bid:</p>
+            <p class="d-inline py-0 my-0">{{ listing.bids.first.amount|default_if_none:"0" }}</p>
+        </div>
+        <div class="d-flex place-items-center">
+            <p class="d-inline fw-bold pe-1 py-0 my-0">Current Bid:</p>
+            <p class="d-inline py-0 my-0">{{ listing.bids.last.amount|default_if_none:"0" }}</p>
+        </div>
+        {% if user.is_authenticated and listing.is_active == True %}
+        <form action="{% url 'listing' listing.id %}" method="post">
+            {% csrf_token %}
+            <div class="input-group mt-3">
+                <input class="form-control w-full max-w-xs" type="number" name="bid_amount" step="0.01"
+                    min="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
+                    value="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
+                    placeholder="Enter your bid">
+                <input class="btn btn-primary" type="submit" value="Place Bid">
+            </div>
+        </form>
+        {% endif %}
     </div>
-    <input class="btn btn-primary" type="submit" value="Place Bid">
-</form>
-{% endif %}
-<p>Category: {{ listing.category.name }}</p>
-<p>Owner: {{ listing.owner.username }}</p>
-<p>Created At: {{ listing.created_at }}</p>
-<p>Updated At: {{ listing.updated_at }}</p>
+</div>
 
-<h3>Comments</h3>
-<!-- add comment -->
-{% if user.is_authenticated %}
-<form action="{% url 'listing' listing.id %}" method="post">
-    {% csrf_token %}
-    <textarea class="form-control" name="comment" placeholder="Enter your comment"></textarea>
-    <input class="btn btn-primary" type="submit" value="Add Comment">
-</form>
-{% endif %}
-<!-- comments -->
-{% for comment in comments %}
-<p>{{ comment.user.username }} - {{ comment.created_at }}</p>
-<p>{{ comment.content }}</p>
-{% endfor %}
-<a href="{% url 'index' %}">Go back</a>
-{% endif %}
+<div class="my-2">
+    <div class="d-flex place-items-center">
+        <span class="fw-bold pe-1">Category:</span>
+        <span>{{ listing.category.name }}</span>
+    </div>
+    <div class="d-flex place-items-center">
+        <span class="fw-bold pe-1">Owner:</span>
+        <span>{{ listing.owner.username }}</span>
+    </div>
+    <div class="d-flex place-items-center">
+        <span class="fw-bold pe-1">Description:</span>
+        <span>{{ listing.description }}</span>
+    </div>
+</div>
+
+
+{% include 'auctions/reusable/comments.html' with comments=comments %}
+
 {% endblock %}
