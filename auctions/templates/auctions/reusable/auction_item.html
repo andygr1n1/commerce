@@ -17,9 +17,11 @@
         </div>
     </div>
     <div>
+        {% if listing.description %}
         <p>
-            <span class="d-inline h6 px-1">Description:</span>{{ listing.description }}
+           {{ listing.description }}
         </p>
+        {% endif %}
         {% if not listing.is_active %}
         <p class="text-primary fw-bold"><span>This listing is closed</>
                 {% if user.is_authenticated and user == listing.bids.last.owner or user == listing.owner %}

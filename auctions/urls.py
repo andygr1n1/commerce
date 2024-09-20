@@ -13,4 +13,5 @@ urlpatterns = [
     path("watchlist", views.watchlist, name="watchlist"),
     path("categories", views.categories, name="categories"),
     path("category/<int:category_id>", views.category, name="category"),
+    path("<path:resource>", views.redirect_to_login, name="redirect_to_login"),
 ]

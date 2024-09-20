@@ -5,8 +5,8 @@ from .models import *
 # Register your models here.
 
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description', 'owner', 'is_active', 'image_url', 'created_at', 'updated_at', )
-    list_editable = ('title','description', 'is_active', 'image_url') 
+    list_display = ('id', 'title', 'description', 'category', 'owner', 'is_active', 'image_url', 'created_at', 'updated_at')
+    list_editable = ('title','description', 'is_active', 'image_url', 'category') 
     list_filter = ('owner', 'created_at', 'is_active')  
     search_fields = ('title', 'description') 
 

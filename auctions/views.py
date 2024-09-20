@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
+from django.db.models import Q
 from .models import AuctionListing, Bid, Category, User, Watchlist, Comment
 
 
@@ -89,7 +89,11 @@ def categories(request):
 
 def category(request, category_id):
     category = Category.objects.get(id=category_id)
-    listings = AuctionListing.objects.filter(category=category, is_active=True)
+    print(category.name)
+    if not category.name == "Other":
+        listings = AuctionListing.objects.filter(category=category, is_active=True)
+    else:
+        listings = AuctionListing.objects.filter(Q(category=None) | Q(category=category), is_active=True)
     return render(request, "auctions/category.html", {
         "category": category,
         "listings": listings
@@ -109,7 +113,7 @@ def add_listing(request):
         new_bid = Bid(owner=request.user, amount=starting_bid, listing=listing)
         new_bid.save()
         listing.bids.add(new_bid)
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse("index")))
+        return HttpResponseRedirect(reverse("index"))
     else:
         categories = Category.objects.all()
         return render(request, "auctions/add_listing.html", {
@@ -157,3 +161,6 @@ def listing(request, listing_id):
         "bids": Bid.objects.filter(listing=listing),
         "comments": Comment.objects.filter(listing=listing).order_by('-created_at')
     })
+
+def redirect_to_login(request, resource):
+    return HttpResponseRedirect(reverse("index"))

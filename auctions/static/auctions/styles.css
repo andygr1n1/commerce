@@ -40,11 +40,6 @@ span {
     text-underline-offset: 5px;
 }
 
-.user-info {
-    padding-right: 16px;
-    font-size: 12px;
-}
-
 .pointer-event {
     cursor: pointer;
 }

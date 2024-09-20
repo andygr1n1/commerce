@@ -51,11 +51,10 @@
             <div class="user-info">
                 {% if user.is_authenticated %}
                 <div class="d-flex gap align-items-center">
-                    <span>Signed in as <strong>{{ user.username }}</strong></span> <a class="px-2 nav-header-item"
-                        href="{% url 'logout' %}">Log Out</a>
+                    <span>Signed in as <strong>{{ user.username }}</strong></span> <a
+                        class="px-2 text-xs nav-header-item" href="{% url 'logout' %}">Log Out</a>
                 </div>
-                {% else %}
-                <a class="nav-header-item" href="{% url 'register' %}">not signed in - Register</a>
+
                 {% endif %}
             </div>
         </div>
