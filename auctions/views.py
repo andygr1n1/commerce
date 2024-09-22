@@ -76,7 +76,6 @@ def closed_listings(request):
 def watchlist(request):
     watchlist = Watchlist.objects.filter(user=request.user)
     listings = AuctionListing.objects.filter(id__in=[watchlist_item.listing.id for watchlist_item in watchlist])
-    print('!!!',listings)
     return render(request, "auctions/watchlist.html", {
         "listings": listings
     })
@@ -89,7 +88,6 @@ def categories(request):
 
 def category(request, category_id):
     category = Category.objects.get(id=category_id)
-    print(category.name)
     if not category.name == "Other":
         listings = AuctionListing.objects.filter(category=category, is_active=True)
     else:
@@ -100,7 +98,6 @@ def category(request, category_id):
     })
 
 def add_listing(request):
-    # print(request.user)
     if request.method == "POST":
         title = request.POST["title"]
         description = request.POST["description"]
@@ -121,7 +118,6 @@ def add_listing(request):
         })
 
 def listing(request, listing_id):
-    # print(request.user)
     if request.method == "POST":
         action = request.POST.get("action")
         bid = request.POST.get("bid_amount")
