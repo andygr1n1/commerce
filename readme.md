@@ -1,7 +1,11 @@
-https://cs50.harvard.edu/web/2020/projects/2/commerce/
-https://docs.djangoproject.com/en/5.1/
-https://docs.djangoproject.com/en/4.0/topics/auth/default/#the-login-required-decorator
-https://docs.djangoproject.com/en/4.0/topics/forms/
+# How to install virtual environment to run the project
+myenv is by default ignored in .gitignore, so you need to create it yourself.
+```
+python3 -m venv myenv
+source myenv/bin/activate
+pip install django
+```
+
 <!--  -->
 https://docs.djangoproject.com/en/5.1/topics/forms/
 # Start
