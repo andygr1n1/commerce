@@ -25,6 +25,11 @@
 {% endif %}
 {% if user.is_authenticated and user == listing.owner and listing.is_active == True %}
 <li class="ps-2">
+    <a href="{% url 'edit_listing' listing.id %}">
+        <button class="btn btn-primary"><i class="bi bi-pen"></i></button>
+    </a>
+</li>
+<li class="ps-2">
     <form action="{% url 'listing' listing.id %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="close-auction" value="close-auction">
@@ -47,7 +52,7 @@
 {% if not listing.is_active and user.is_authenticated %}
 {% if user == listing.bids.last.owner or user == listing.owner %}
 <h6 class="text-primary">Winner is {{ listing.bids.last.owner.username }} with price
-    {{listing.bids.last.amount }}</h6>
+    {{ listing.bids.last.amount|floatformat:0 }}</h6>
 {% endif %}
 {% endif %}
 
@@ -60,17 +65,17 @@
     <div class="ps-2">
         <div class="d-flex place-items-center">
             <p class="d-inline fw-bold pe-1 py-0 my-0">Starting Bid:</p>
-            <p class="d-inline py-0 my-0">{{ listing.bids.first.amount|default_if_none:"0" }}</p>
+            <p class="d-inline py-0 my-0">{{ listing.bids.first.amount|floatformat|default_if_none:"0" }}</p>
         </div>
         <div class="d-flex place-items-center">
             <p class="d-inline fw-bold pe-1 py-0 my-0">Current Bid:</p>
-            <p class="d-inline py-0 my-0">{{ listing.bids.last.amount|default_if_none:"0" }}</p>
+            <p class="d-inline py-0 my-0">{{ listing.bids.last.amount|floatformat|default_if_none:"0" }}</p>
         </div>
         {% if user.is_authenticated and listing.is_active == True %}
         <form action="{% url 'listing' listing.id %}" method="post">
             {% csrf_token %}
             <div class="input-group mt-3">
-                <input class="form-control w-full max-w-xs" type="number" name="bid_amount" step="0.01"
+                <input class="form-control w-full max-w-xs" type="number" name="bid_amount" step="1"
                     min="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
                     value="{{ listing.bids.last.amount|default_if_none:listing.bids.first.amount|add:1 }}"
                     placeholder="Enter your bid">

@@ -162,5 +162,18 @@ def listing(request, listing_id):
         "comments": Comment.objects.filter(listing=listing).order_by('-created_at')
     })
 
+def edit_listing(request, listing_id):
+    listing = AuctionListing.objects.get(id=listing_id)
+    if request.method == "POST":
+        listing.description = request.POST["description"]
+        listing.image_url = request.POST["image_url"]
+        listing.category = Category.objects.get(id=request.POST["category"]) if request.POST["category"] else None
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+    return render(request, "auctions/edit_listing.html", {
+        "listing": listing,
+        "categories": Category.objects.all()
+    })
+
 def redirect_to_login(request, resource):
     return HttpResponseRedirect(reverse("index"))

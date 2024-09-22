@@ -9,9 +9,9 @@
             <p class="d-inline fw-bold px-1">Current Bid:</p>
             <span class=" text-primary">
                 {% if listing.bids.last.amount %}
-                {{ listing.bids.last.amount }}
+                {{ listing.bids.last.amount|floatformat }}
                 {% else %}
-                {{ listing.bids.first.amount|default_if_none:"0" }}
+                {{ listing.bids.first.amount|floatformat|default_if_none:"0" }}
                 {% endif %}</span>
             </p>
         </div>
